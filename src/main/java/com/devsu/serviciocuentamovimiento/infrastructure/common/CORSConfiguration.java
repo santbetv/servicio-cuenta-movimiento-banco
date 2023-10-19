@@ -18,7 +18,7 @@ import org.springframework.web.filter.CorsFilter;
 
 /**
  *
- * @author rizzoli
+ * @author Santiago Betancur
  */
 @Configuration
 public class CORSConfiguration {

@@ -47,7 +47,7 @@ public class HandleMessage {
     public void actualizarCliente(Cliente cliente) {
         // Buscar y agregar el cliente en la lista
         boolean clienteExistente = clientes.stream().anyMatch(data -> data.getIdentificacion().equals(cliente.getIdentificacion()));
-        
+
         if (!clienteExistente) {
             clientes.add(cliente);
         }
@@ -63,7 +63,7 @@ public class HandleMessage {
     @PostConstruct
     public void init() throws UnknownHostException {
         String urlProduct = "http://localhost:8089/api";
-        actualizarClienteInicio(client.getList(urlProduct));
+        actualizarClienteInicio(client.getList(urlProduct, Cliente.class));
     }
 
     public Cliente obtenerClienteDeCola(Long idCliente) {

@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  *
- * @author rizzoli
+ * @author Santiago Betancur
  */
 @Configuration
 public class MessagingConfig {

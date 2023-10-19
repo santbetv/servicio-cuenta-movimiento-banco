@@ -5,9 +5,8 @@
  */
 package com.devsu.serviciocuentamovimiento.domain;
 
+import com.devsu.serviciocuentamovimiento.application.dto.CuentaDtoResponse;
 import com.devsu.serviciocuentamovimiento.infrastructure.adapter.out.db.model.CuentaEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,16 +24,27 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class Cuenta {
-    
+
     private Long idCuenta;
     private String numeroNuenta;
     private String tipoCuenta;
     private BigDecimal saldoInicial;
     private Boolean estado;
     private Cliente cliente;
-    
-    public CuentaEntity crearCuenta(){
+
+    public CuentaEntity crearCuenta() {
         return new CuentaEntity(idCuenta, numeroNuenta, tipoCuenta, saldoInicial, estado, cliente.getIdCliente());
     }
-    
+
+    public Cuenta crearCuenta(CuentaDtoResponse cuentaDtoResponse, Cliente cliente) {
+        return Cuenta.builder()
+                .idCuenta(cuentaDtoResponse.getIdCuenta())
+                .numeroNuenta(cuentaDtoResponse.getNumeroNuenta())
+                .tipoCuenta(cuentaDtoResponse.getTipoCuenta())
+                .saldoInicial(cuentaDtoResponse.getSaldoInicial())
+                .estado(cuentaDtoResponse.getEstado())
+                .cliente(cliente)
+                .build();
+    }
+
 }

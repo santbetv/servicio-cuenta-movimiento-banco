@@ -29,7 +29,7 @@ import reactor.netty.http.client.HttpClient;
 
 /**
  *
- * @author rizzoli
+ * @author Santiago Betancur
  */
 @Component
 public class ClientWebClient {
@@ -63,7 +63,7 @@ public class ClientWebClient {
                 connection.addHandlerLast(new WriteTimeoutHandler(5000, TimeUnit.MILLISECONDS));
             });
 
-    public <T> List<T> getList(String URL) throws UnknownHostException {
+    public <T> List<T> getList(String URL, Class<T> tipo) throws UnknownHostException {
         List<T> Clientes = new ArrayList<>();
         try {
             WebClient build = webClientBuilder.clientConnector(new ReactorClientHttpConnector(client))
@@ -72,10 +72,10 @@ public class ClientWebClient {
                     .defaultUriVariables(Collections.singletonMap("url", URL))
                     .build();
 
-            List<Cliente> block = build.method(HttpMethod.GET).uri(uriBuilder -> uriBuilder
+            List<T> block = build.method(HttpMethod.GET).uri(uriBuilder -> uriBuilder
                     .path("/clientes")
                     .build())
-                    .retrieve().bodyToFlux(Cliente.class).collectList().block();
+                    .retrieve().bodyToFlux(tipo).collectList().block();
             
             if (!block.isEmpty()) {
                 Clientes = (List<T>) block;

@@ -9,6 +9,8 @@ import com.devsu.serviciocuentamovimiento.application.dto.CuentaDtoResponse;
 import com.devsu.serviciocuentamovimiento.domain.Cuenta;
 import com.devsu.serviciocuentamovimiento.domain.port.out.db.ICuentaService;
 import com.devsu.serviciocuentamovimiento.infrastructure.adapter.out.notification.Publisher;
+import com.devsu.serviciocuentamovimiento.infrastructure.common.exception.BussinesRuleException;
+import com.devsu.serviciocuentamovimiento.infrastructure.common.exception.BussinesRuleValidationException;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -16,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
 
 /**
  *
@@ -43,9 +46,17 @@ public class CuentaServiceImpl implements ICuentaService {
     @Transactional(readOnly = true) //
     public CuentaDtoResponse findById(Long id) {
         Optional<CuentaEntity> cuenta = cuentaRepository.findById(id);
+        Cuenta c = new Cuenta();
         if (!cuenta.isEmpty()) {
-            CuentaEntity c =cuentaRepository.findById(id).get();
-            return null;
+            CuentaEntity ce = cuentaRepository.findById(id).get();
+            Cliente cliente = handleMessage.obtenerClientePorId(ce.getIdCliente());
+            c = Cuenta.builder().numeroNuenta(ce.getNumeroNuenta())
+                    .tipoCuenta(ce.getTipoCuenta())
+                    .saldoInicial(ce.getSaldoInicial())
+                    .estado(ce.getEstado())
+                    .cliente(cliente).build();
+            c.setIdCuenta(ce.getIdCuenta());
+            return new CuentaDtoResponse(c);
         } else {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -57,28 +68,92 @@ public class CuentaServiceImpl implements ICuentaService {
         return cuentaRepository.findAll();
     }
 
+//    @Override
+//    @Transactional //
+//    public CuentaDtoResponse save(CuentaDtoRequest cuenta) {
+//        Cliente cliente = handleMessage.obtenerClientePorId(cuenta.getIdCliente());
+//
+//        Cuenta c = new Cuenta();
+//        if (cliente != null) {
+//            c = Cuenta.builder().numeroNuenta(cuenta.getNumeroNuenta())
+//                    .tipoCuenta(cuenta.getTipoCuenta())
+//                    .saldoInicial(cuenta.getSaldoInicial())
+//                    .estado(cuenta.getEstado())
+//                    .cliente(cliente).build();
+//        } else {
+//            System.out.println("No se pudo asociar un cliente a la cuenta. El cliente con ID " + cuenta.getIdCliente() + " no fue encontrado.");
+//        }
+//
+//        CuentaEntity ce = cuentaRepository.save(c.crearCuenta());
+//
+//        c.setIdCuenta(ce.getIdCuenta());
+//        publisher.send(c);
+//        return new CuentaDtoResponse(c);
+//
+//    }
     @Override
     @Transactional //
-    public CuentaDtoResponse save(CuentaDtoRequest cuenta) {
-        Cliente cliente = handleMessage.obtenerClientePorId(cuenta.getIdCliente());
-        
-        Cuenta c = new Cuenta();
-        if (cliente != null) {
-          c = Cuenta.builder().numeroNuenta(cuenta.getNumeroNuenta())
-                    .tipoCuenta(cuenta.getTipoCuenta())
-                    .saldoInicial(cuenta.getSaldoInicial())
-                    .estado(cuenta.getEstado())
-                    .cliente(cliente).build();
+    public CuentaDtoResponse save(CuentaDtoRequest cuenta, BindingResult result) throws BussinesRuleValidationException, BussinesRuleException {
+
+        if (result.hasErrors()) {
+            BussinesRuleValidationException exception = new BussinesRuleValidationException(INFO_URL, result);
+            throw exception;
         } else {
-            System.out.println("No se pudo asociar un cliente a la cuenta. El cliente con ID " + cuenta.getIdCliente() + " no fue encontrado.");
+            Cliente cliente = handleMessage.obtenerClientePorId(cuenta.getIdCliente());
+
+            Cuenta c = new Cuenta();
+            if (cliente != null) {
+                c = Cuenta.builder().numeroNuenta(cuenta.getNumeroNuenta())
+                        .tipoCuenta(cuenta.getTipoCuenta())
+                        .saldoInicial(cuenta.getSaldoInicial())
+                        .estado(cuenta.getEstado())
+                        .cliente(cliente).build();
+            } else {
+                BussinesRuleException exception = new BussinesRuleException("No se pudo asociar un cliente a la cuenta. El cliente con ID " + cuenta.getIdCliente() + " no fue encontrado.");
+                throw exception;
+            }
+
+            CuentaEntity ce = cuentaRepository.save(c.crearCuenta());
+
+            c.setIdCuenta(ce.getIdCuenta());
+            publisher.send(c);
+            return new CuentaDtoResponse(c);
         }
+    }
 
-        CuentaEntity ce= cuentaRepository.save(c.crearCuenta());
-        
-        c.setIdCuenta(ce.getIdCuenta());
-        publisher.send(c);
-        return new CuentaDtoResponse(c);
+    @Override
+    @Transactional//
+    public void put(CuentaDtoRequest cuentaDTO, BindingResult result, Long id) throws BussinesRuleException, BussinesRuleValidationException {
+        Optional<CuentaEntity> find = cuentaRepository.findById(id);
 
+        if (!find.isEmpty()) {
+            if (result.hasErrors()) {
+                BussinesRuleValidationException exception = new BussinesRuleValidationException(INFO_URL, result);
+                throw exception;
+            } else {
+                find.get().setEstado(cuentaDTO.getEstado());
+                find.get().setNumeroNuenta(cuentaDTO.getNumeroNuenta());
+                find.get().setSaldoInicial(cuentaDTO.getSaldoInicial());
+                find.get().setTipoCuenta(cuentaDTO.getTipoCuenta());
+                CuentaEntity ce = cuentaRepository.save(find.get());
+                cuentaRepository.save(ce);
+            }
+        } else {
+            BussinesRuleException exception = new BussinesRuleException(INFO_URL);
+            throw exception;
+        }
+    }
+
+    @Override
+    @Transactional //
+    public void delete(Long id) throws BussinesRuleException {
+        Optional<CuentaEntity> cuenta = cuentaRepository.findById(id);
+        if (!cuenta.isEmpty()) {
+            cuentaRepository.delete(cuenta.get());
+        } else {
+            BussinesRuleException exception = new BussinesRuleException(INFO_URL);
+            throw exception;
+        }
     }
 
 }

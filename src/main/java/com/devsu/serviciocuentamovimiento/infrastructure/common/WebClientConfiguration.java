@@ -12,13 +12,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  *
- * @author rizzoli
+ * @author Santiago Betancur
  */
 @Configuration
 public class WebClientConfiguration {
     
     /**
-     * Elemento que permite manejar las peticiones externas para otras apis desde el WebClient
+     * Elemento que permite manejar las peticiones externas para otras apis desde el WebClient con balanceo de carga
      * @return 
      */
     @Bean

@@ -1,5 +1,6 @@
 package com.devsu.serviciocuentamovimiento.infrastructure.adapter.out.db.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -45,7 +46,7 @@ public class CuentaEntity implements Serializable {
     @Column(name = "id_cliente")
     private Long idCliente;
     
-    @JsonManagedReference
+    @JsonIgnore // Evita la serialización finita no mostrar lista de cuentaMovimientos
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "objCuentaMovimiento", cascade = CascadeType.ALL)
     private List<MovimientoEntity> cuentaMovimientos;
 
