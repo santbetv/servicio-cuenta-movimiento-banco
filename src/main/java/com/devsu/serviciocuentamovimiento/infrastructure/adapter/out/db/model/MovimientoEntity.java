@@ -5,7 +5,7 @@
  */
 package com.devsu.serviciocuentamovimiento.infrastructure.adapter.out.db.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,7 +14,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -33,6 +32,7 @@ import lombok.Setter;
 @NoArgsConstructor//con constructor default
 @Entity
 @Table(name = "movimientos")
+@JsonIgnoreProperties({"objCuentaMovimiento"})
 public class MovimientoEntity implements Serializable {
 
     @Id
@@ -54,12 +54,7 @@ public class MovimientoEntity implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cuenta")
     private CuentaEntity objCuentaMovimiento;
-
-    @PrePersist
-    private void guardarFechaPreviamente() {
-        this.fecha = LocalDate.now();
-    }
-
+    
     private static final long serialVersionUID = -6146988320602532496L;
 
 }

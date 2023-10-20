@@ -46,7 +46,7 @@ public class CuentaEntity implements Serializable {
     @Column(name = "id_cliente")
     private Long idCliente;
     
-    @JsonIgnore // Evita la serialización finita no mostrar lista de cuentaMovimientos
+    //@JsonIgnore // Evita la serialización finita no mostrar lista de cuentaMovimientos
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "objCuentaMovimiento", cascade = CascadeType.ALL)
     private List<MovimientoEntity> cuentaMovimientos;
 

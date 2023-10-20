@@ -7,11 +7,12 @@ package com.devsu.serviciocuentamovimiento.infrastructure.adapter.out.db.reposit
 
 import com.devsu.serviciocuentamovimiento.infrastructure.adapter.out.db.model.MovimientoEntity;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -23,9 +24,12 @@ public interface MovimientoRepository extends JpaRepository<MovimientoEntity, Lo
 
     @Query(value = "SELECT saldo FROM MOVIMIENTOS where ID_CLIENTE =?1 and ID_CUENTA =?2 order by ID_MOVIMIENTO desc limit 1", nativeQuery = true)
     public BigDecimal ultimoSaldo(Long idCliente, Long idCuenta);
-    
+
+    //@Fetch(FetchMode.SUBSELECT)
     @Query("SELECT m FROM MovimientoEntity m JOIN FETCH m.objCuentaMovimiento")
-    @Fetch(FetchMode.SUBSELECT)
     public List<MovimientoEntity> datosCliente();
+
+    @Query("SELECT m FROM MovimientoEntity m JOIN FETCH m.objCuentaMovimiento WHERE m.fecha >= :fechaInicio AND m.idCliente = :idCliente")
+    public List<MovimientoEntity> datosClientePorFecha(@Param("fechaInicio") LocalDate fechaInicio,@Param("idCliente") Long idCliente);
 
 }

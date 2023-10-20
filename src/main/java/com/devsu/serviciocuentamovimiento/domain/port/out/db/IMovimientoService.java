@@ -22,14 +22,14 @@ import org.springframework.validation.BindingResult;
 public interface IMovimientoService {
 
     public MovimientoEntity findById(Long id) throws BussinesRuleException;
-//
+
     public List<MovimientoEntity> findAll();
-//    
-    public List<MovimientoEntity> findByFechaAndByCustomer();
 
-    public MovimientoResponse save(MovimientoDTO movimientoDTO, BindingResult result) throws BussinesRuleValidationException, BussinesRuleException,BussinesRuleMovimientoValidationException;
+    public List<MovimientoResponse> findByFechaAndByCustomer(String fecha, Long idCliente);
 
-//    public void put(MovimientoDTO movimientoDTO, BindingResult result, Long id) throws BussinesRuleException, BussinesRuleValidationException;
+    public MovimientoResponse save(MovimientoDTO movimientoDTO, BindingResult result) throws BussinesRuleValidationException, BussinesRuleException, BussinesRuleMovimientoValidationException;
 
-//    public void delete(Long id) throws BussinesRuleException;
+    public void put(MovimientoDTO movimientoDTO, BindingResult result, Long id) throws BussinesRuleException, BussinesRuleValidationException;
+
+    public void delete(Long id) throws BussinesRuleException;
 }

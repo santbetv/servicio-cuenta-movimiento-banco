@@ -6,7 +6,9 @@
 package com.devsu.serviciocuentamovimiento.application.dto;
 
 
+import com.devsu.serviciocuentamovimiento.domain.Cliente;
 import com.devsu.serviciocuentamovimiento.domain.Movimiento;
+import com.devsu.serviciocuentamovimiento.infrastructure.adapter.out.db.model.MovimientoEntity;
 import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,6 +36,16 @@ public class MovimientoResponse {
     public MovimientoResponse(Movimiento movimiento) {
         this.fecha = movimiento.getFecha().toString();
         this.nombre = movimiento.getObjClienteMovimiento().getNombre();
+        this.numeroCuenta = movimiento.getObjCuentaMovimiento().getNumeroNuenta();
+        this.tipoCuenta = movimiento.getObjCuentaMovimiento().getTipoCuenta();
+        this.saldoInicial = movimiento.getObjCuentaMovimiento().getSaldoInicial();
+        this.estado = movimiento.getObjCuentaMovimiento().getEstado();
+        this.tipoMovimiento = movimiento.getValor();
+        this.saldo = movimiento.getSaldo();
+    }
+    public MovimientoResponse(MovimientoEntity movimiento, Cliente cliente) {
+        this.fecha = movimiento.getFecha().toString();
+        this.nombre = cliente.getNombre();
         this.numeroCuenta = movimiento.getObjCuentaMovimiento().getNumeroNuenta();
         this.tipoCuenta = movimiento.getObjCuentaMovimiento().getTipoCuenta();
         this.saldoInicial = movimiento.getObjCuentaMovimiento().getSaldoInicial();

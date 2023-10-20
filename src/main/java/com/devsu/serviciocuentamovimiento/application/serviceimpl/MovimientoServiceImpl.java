@@ -21,6 +21,9 @@ import com.devsu.serviciocuentamovimiento.infrastructure.common.exception.Bussin
 import com.devsu.serviciocuentamovimiento.infrastructure.common.exception.BussinesRuleMovimientoValidationException;
 import com.devsu.serviciocuentamovimiento.infrastructure.common.exception.BussinesRuleValidationException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -56,8 +59,8 @@ public class MovimientoServiceImpl implements IMovimientoService {
     @Override
     @Transactional(readOnly = true) //
     public MovimientoEntity findById(Long id) throws BussinesRuleException {
-        Optional<MovimientoEntity> cuenta = movimientoRepository.findById(id);
-        if (!cuenta.isEmpty()) {
+        Optional<MovimientoEntity> movimiento = movimientoRepository.findById(id);
+        if (!movimiento.isEmpty()) {
             return movimientoRepository.findById(id).get();
         } else {
             BussinesRuleException exception = new BussinesRuleException(INFO_URL);
@@ -74,9 +77,18 @@ public class MovimientoServiceImpl implements IMovimientoService {
 
     @Override
     @Transactional(readOnly = true) //
-    public List<MovimientoEntity> findByFechaAndByCustomer() {
-        List<MovimientoEntity> buscarFecha = movimientoRepository.datosCliente();
-        return buscarFecha;
+    public List<MovimientoResponse> findByFechaAndByCustomer(String fecha, Long idCliente) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd");
+        LocalDate fechaEntrada = LocalDate.parse(fecha, formatter);
+
+        List<MovimientoResponse> listaMovimientos = new ArrayList<>();
+        List<MovimientoEntity> movimientoFecha = movimientoRepository.datosClientePorFecha(fechaEntrada, idCliente);
+
+        movimientoFecha.forEach(info
+                -> listaMovimientos.add(new MovimientoResponse(info, handleMessage.obtenerClientePorId(info.getIdCliente())))
+        );
+
+        return listaMovimientos;
     }
 
     @Override
@@ -92,7 +104,6 @@ public class MovimientoServiceImpl implements IMovimientoService {
             BigDecimal infoUltimoSaldo = movimientoRepository.ultimoSaldo(movimientoDTO.getIdCliente(), movimientoDTO.getIdCuenta());
 
             Movimiento m = new Movimiento();
-            MovimientoResponse mr = new MovimientoResponse();
             if (TipoMovimiento.RETIRO.getValor().equals(movimientoDTO.getTipoMovimiento()) && cuenta.getSaldoInicial().compareTo(BigDecimal.ZERO) == 0) {
                 BussinesRuleMovimientoValidationException exception = new BussinesRuleMovimientoValidationException(INFO_URL, SALDO_NO_DISPONIBLE);
                 throw exception;
@@ -106,35 +117,44 @@ public class MovimientoServiceImpl implements IMovimientoService {
                 m.setSaldo(m.agregarSaldoTotal(cuenta.getSaldoInicial(), movimientoDTO.getTipoMovimiento(), infoUltimoSaldo));
                 m.setObjCuentaMovimiento(new Cuenta().crearCuenta(cuenta, cliente));
                 m.setObjClienteMovimiento(cliente);
-                
+
                 movimientoRepository.save(m.crearMovimiento());
             }
-            return mr.build(m);
+            return new MovimientoResponse().build(m);
         }
     }
 
-//    @Override
-//    @Transactional //
-//    public void put(MovimientoDTO movimientoDTO, BindingResult result, Long id) throws BussinesRuleException, BussinesRuleValidationException {
-//        Optional<Movimiento> find = movimientoRepository.findById(id);
-//        if (!find.isEmpty()) {
-//            if (result.hasErrors()) {
-//                BussinesRuleValidationException exception = new BussinesRuleValidationException(INFO_URL, result);
-//                throw exception;
-//            } else {
-//                find.get().setValor(movimientoDTO.getValor());
-//                find.get().setTipoMovimiento(movimientoDTO.getTipoMovimiento());
-//                find.get().setSaldo(find.get().actualizarSaldoTotal());
-//                Movimiento save = movimientoRepository.save(find.get());
-//            }
-//        } else {
-//            BussinesRuleException exception = new BussinesRuleException(INFO_URL);
-//            throw exception;
-//        }
-//    }
-//
-//    @Override
-//    public void delete(Long id) throws BussinesRuleException {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//    }
+    @Override
+    @Transactional //
+    public void put(MovimientoDTO movimientoDTO, BindingResult result, Long id) throws BussinesRuleException, BussinesRuleValidationException {
+        Optional<MovimientoEntity> find = movimientoRepository.findById(id);
+
+        if (!find.isEmpty()) {
+            if (result.hasErrors()) {
+                BussinesRuleValidationException exception = new BussinesRuleValidationException(INFO_URL, result);
+                throw exception;
+            } else {
+                
+                CuentaDtoResponse cuenta = iCuentaService.findById(find.get().getObjCuentaMovimiento().getIdCuenta());
+                Cliente cliente = handleMessage.obtenerClientePorId(find.get().getIdCliente());
+                
+                Movimiento m = new Movimiento();
+                m.crearMovimientoActual(find.get(), cliente, new Cuenta().crearCuenta(cuenta, cliente),movimientoDTO.getTipoMovimiento(),movimientoDTO.getValor());
+
+                find.get().setValor(m.getValor());
+                find.get().setTipoMovimiento(m.getTipoMovimiento());
+                find.get().setSaldo(m.getSaldo());
+                
+                MovimientoEntity save = movimientoRepository.save(find.get());
+            }
+        } else {
+            BussinesRuleException exception = new BussinesRuleException(INFO_URL);
+            throw exception;
+        }
+    }
+
+    @Override
+    public void delete(Long id) throws BussinesRuleException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

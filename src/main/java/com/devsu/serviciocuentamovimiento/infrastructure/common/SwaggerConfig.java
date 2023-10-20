@@ -43,7 +43,7 @@ public class SwaggerConfig {
     }
 
     private Info apiEndPointinfo() {
-        return new Info().title("DEVSU banco Cuentas")
+        return new Info().title("DEVSU banco Cuentas, Movimientos")
                         .description("Spring bank application")
                         .version("v0.0.1")
                         .license(new License().name("Apache 2.0").url("http://springdoc.org")); 
