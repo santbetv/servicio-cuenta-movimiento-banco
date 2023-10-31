@@ -68,29 +68,6 @@ public class CuentaServiceImpl implements ICuentaService {
         return cuentaRepository.findAll();
     }
 
-//    @Override
-//    @Transactional //
-//    public CuentaDtoResponse save(CuentaDtoRequest cuenta) {
-//        Cliente cliente = handleMessage.obtenerClientePorId(cuenta.getIdCliente());
-//
-//        Cuenta c = new Cuenta();
-//        if (cliente != null) {
-//            c = Cuenta.builder().numeroNuenta(cuenta.getNumeroNuenta())
-//                    .tipoCuenta(cuenta.getTipoCuenta())
-//                    .saldoInicial(cuenta.getSaldoInicial())
-//                    .estado(cuenta.getEstado())
-//                    .cliente(cliente).build();
-//        } else {
-//            System.out.println("No se pudo asociar un cliente a la cuenta. El cliente con ID " + cuenta.getIdCliente() + " no fue encontrado.");
-//        }
-//
-//        CuentaEntity ce = cuentaRepository.save(c.crearCuenta());
-//
-//        c.setIdCuenta(ce.getIdCuenta());
-//        publisher.send(c);
-//        return new CuentaDtoResponse(c);
-//
-//    }
     @Override
     @Transactional //
     public CuentaDtoResponse save(CuentaDtoRequest cuenta, BindingResult result) throws BussinesRuleValidationException, BussinesRuleException {

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -25,6 +26,9 @@ public class HandleMessage {
     private ClientWebClient client;
     private RabbitTemplate rabbitTemplate;
     private List<Cliente> clientes;
+    
+    @Value("${URL.CLIENTE}")
+    private String urlCliente;
 
     public HandleMessage(RabbitTemplate rabbitTemplate, ClientWebClient client) {
         this.rabbitTemplate = rabbitTemplate;
@@ -62,7 +66,7 @@ public class HandleMessage {
 
     @PostConstruct
     public void init() throws UnknownHostException {
-        String urlProduct = "http://localhost:8089/api";
+        String urlProduct = urlCliente;
         actualizarClienteInicio(client.getList(urlProduct, Cliente.class));
     }
 
